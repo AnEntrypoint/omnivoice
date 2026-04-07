@@ -1,0 +1,39 @@
+[
+  {
+    "id": "init-git-repo",
+    "subject": "Initialize git repo and commit all files",
+    "status": "pending",
+    "description": "Run git init, add all files, and create initial commit in C:/dev/OmniVoice",
+    "effort": "small",
+    "category": "infra",
+    "blocking": [
+      "create-gh-repo"
+    ],
+    "blockedBy": [],
+    "acceptance": [
+      "git log shows at least 1 commit"
+    ],
+    "edge_cases": [
+      "large binary files may slow commit"
+    ]
+  },
+  {
+    "id": "create-gh-repo",
+    "subject": "Create GitHub repo AnEntrypoint/omnivoice and push",
+    "status": "pending",
+    "description": "Use gh repo create AnEntrypoint/omnivoice --public --source=. --remote=origin --push",
+    "effort": "small",
+    "category": "infra",
+    "blocking": [],
+    "blockedBy": [
+      "init-git-repo"
+    ],
+    "acceptance": [
+      "gh repo view AnEntrypoint/omnivoice returns 200"
+    ],
+    "edge_cases": [
+      "repo may already exist",
+      "AnEntrypoint may be an org requiring write access"
+    ]
+  }
+]
