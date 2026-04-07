@@ -47,6 +47,7 @@ class AudioDecoderWrapper(nn.Module):
 
 
 def _export(module, args, path, input_names, output_names, dynamic_axes):
+    import onnx
     torch.onnx.export(
         module, args, path,
         input_names=input_names,
@@ -55,7 +56,9 @@ def _export(module, args, path, input_names, output_names, dynamic_axes):
         opset_version=17,
         do_constant_folding=True,
     )
-    print(f"Exported: {path}")
+    model_proto = onnx.load(path, load_external_data=True)
+    onnx.save_model(model_proto, path, save_as_external_data=False)
+    print(f"Exported (inline): {path}")
 
 
 def export_lm(model, output_dir, device):
