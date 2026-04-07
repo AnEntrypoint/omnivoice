@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^3.5.0",
-    "onnxruntime-web": "^1.21.0"
+    "onnxruntime-web": "1.21.0"
   },
   "devDependencies": {
     "vite": "^6.3.0"
