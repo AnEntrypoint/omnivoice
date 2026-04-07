@@ -123,6 +123,8 @@ cd web && npm install && npm run dev
 # Open http://localhost:5173 in Chrome or Edge
 ```
 
+A live demo is automatically deployed to **GitHub Pages** on every push to `main` via [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml). The demo UI loads when you supply the URL of an exported model directory.
+
 See [`web/README.md`](web/README.md) for production build instructions, required HTTP headers, and model size details.
 
 **Requirements**: Chrome 113+ or Edge 113+ for WebGPU; any modern browser for WASM fallback.
