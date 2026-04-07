@@ -47,6 +47,7 @@ class AudioDecoderWrapper(nn.Module):
 
 
 def _export(module, args, path, input_names, output_names, dynamic_axes):
+    import onnx
     torch.onnx.export(
         module, args, path,
         input_names=input_names,
@@ -55,7 +56,16 @@ def _export(module, args, path, input_names, output_names, dynamic_axes):
         opset_version=17,
         do_constant_folding=True,
     )
-    print(f"Exported: {path}")
+    data_file = os.path.basename(path) + ".data"
+    model_proto = onnx.load(path, load_external_data=True)
+    onnx.save_model(
+        model_proto, path,
+        save_as_external_data=True,
+        all_tensors_to_one_file=True,
+        location=data_file,
+        convert_attribute=False,
+    )
+    print(f"Exported: {path} + {data_file}")
 
 
 def export_lm(model, output_dir, device):
@@ -104,16 +114,11 @@ def export_audio_decoder(audio_tokenizer, output_dir, device, num_codebook=8):
 
 def write_manifest(output_dir):
     import json
-    all_files = os.listdir(output_dir)
-    lm_external = [f for f in all_files if f not in (
-        "omnivoice_lm.onnx", "audio_encoder.onnx", "audio_decoder.onnx",
-        "tokenizer.json", "tokenizer_config.json", "chat_template.jinja",
-        "manifest.json",
-    ) and not f.startswith(".")]
-    manifest = {"lm_external_data": sorted(lm_external)}
+    data_file = "omnivoice_lm.onnx.data"
+    manifest = {"lm_external_data": [data_file] if os.path.exists(os.path.join(output_dir, data_file)) else []}
     with open(os.path.join(output_dir, "manifest.json"), "w") as f:
         json.dump(manifest, f)
-    print(f"manifest.json written with {len(lm_external)} external data files")
+    print(f"manifest.json written: {manifest}")
 
 
 def main():
