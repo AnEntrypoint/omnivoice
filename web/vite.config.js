@@ -1,0 +1,22 @@
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  optimizeDeps: {
+    exclude: ['onnxruntime-web'],
+  },
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      external: [],
+    },
+  },
+  worker: {
+    format: 'es',
+  },
+});
