@@ -17,7 +17,19 @@ export class OmniVoiceEngine {
     this.device = (typeof navigator !== 'undefined' && navigator.gpu) ? 'webgpu' : 'wasm';
     const opts = { executionProviders: [this.device], graphOptimizationLevel: 'all' };
     onProgress?.('LM model…');
-    this.lmSession = await ort.InferenceSession.create(`${modelDir}/omnivoice_lm.onnx`, opts);
+    const manifest = await fetch(`${modelDir}/manifest.json`).then(r => r.json()).catch(() => null);
+    const lmOpts = { ...opts };
+    if (manifest?.lm_external_data?.length) {
+      onProgress?.('Fetching weights…');
+      lmOpts.externalData = await Promise.all(
+        manifest.lm_external_data.map(async name => {
+          const buf = await fetch(`${modelDir}/${name}`).then(r => r.arrayBuffer());
+          return { path: name, data: new Uint8Array(buf) };
+        })
+      );
+    }
+    const lmBuf = await fetch(`${modelDir}/omnivoice_lm.onnx`).then(r => r.arrayBuffer());
+    this.lmSession = await ort.InferenceSession.create(new Uint8Array(lmBuf), lmOpts);
     onProgress?.('Audio encoder…');
     this.encSession = await ort.InferenceSession.create(`${modelDir}/audio_encoder.onnx`, opts);
     onProgress?.('Audio decoder…');
