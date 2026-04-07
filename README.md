@@ -16,7 +16,7 @@
 
 OmniVoice is a state-of-the-art massive multilingual zero-shot text-to-speech (TTS) model supporting over 600 languages. Built on a novel diffusion language model-style architecture, it generates high-quality speech with superior inference speed, supporting voice cloning and voice design.
 
-**Contents**: [Key Features](#key-features) | [Installation](#installation) | [Quick Start](#quick-start) | [Python API](#python-api) | [Command-Line Tools](#command-line-tools) | [Training & Evaluation](#training--evaluation) | [Discussion](#discussion--communication) | [Citation](#citation)
+**Contents**: [Key Features](#key-features) | [Installation](#installation) | [Quick Start](#quick-start) | [In-Browser Inference](#in-browser-inference-webgpu) | [Python API](#python-api) | [Command-Line Tools](#command-line-tools) | [Training & Evaluation](#training--evaluation) | [Discussion](#discussion--communication) | [Citation](#citation)
 
 ## Key Features
 
@@ -26,6 +26,7 @@ OmniVoice is a state-of-the-art massive multilingual zero-shot text-to-speech (T
 - **Fine-grained Control**: Non-verbal symbols (e.g., `[laughter]`) and pronunciation correction via pinyin or phonemes.
 - **Fast Inference**: RTF as low as 0.025 (40x faster than real-time).
 - **Diffusion Language Model-Style Architecture**: A clean, streamlined, and scalable design that delivers both quality and speed.
+- **In-Browser Inference**: Run entirely in Chrome/Edge via WebGPU-accelerated ONNX Runtime — no server required.
 
 ---
 
@@ -100,6 +101,33 @@ Try OmniVoice without coding:
 > If you have trouble connecting to HuggingFace when downloading the pre-trained models, set `export HF_ENDPOINT="https://hf-mirror.com"` before running.
 
 For full usage, see the [Python API](#python-api) and [Command-Line Tools](#command-line-tools) sections below.
+
+---
+
+## In-Browser Inference (WebGPU)
+
+OmniVoice can run entirely in Chrome/Edge using WebGPU-accelerated ONNX Runtime — no Python, no server.
+
+**Step 1** — Export ONNX models (one-time, requires Python env):
+
+```bash
+python -m omnivoice.scripts.export_onnx \
+    --model_path k2-fsa/OmniVoice \
+    --output_dir ./web/public/models
+```
+
+**Step 2** — Serve the web app:
+
+```bash
+cd web && npm install && npm run dev
+# Open http://localhost:5173 in Chrome or Edge
+```
+
+A live demo is automatically deployed to **GitHub Pages** on every push to `main` via [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml). The demo UI loads when you supply the URL of an exported model directory.
+
+See [`web/README.md`](web/README.md) for production build instructions, required HTTP headers, and model size details.
+
+**Requirements**: Chrome 113+ or Edge 113+ for WebGPU; any modern browser for WASM fallback.
 
 ---
 
