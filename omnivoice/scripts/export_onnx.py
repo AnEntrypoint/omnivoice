@@ -91,8 +91,8 @@ def export_audio_encoder(audio_tokenizer, output_dir, device):
     )
 
 
-def export_audio_decoder(audio_tokenizer, output_dir, device):
-    dummy = torch.randint(0, 1024, (1, audio_tokenizer.config.codebook_size, 10), dtype=torch.int32, device=device)
+def export_audio_decoder(audio_tokenizer, output_dir, device, num_codebook=8):
+    dummy = torch.randint(0, 1024, (1, num_codebook, 10), dtype=torch.int32, device=device)
     wrapper = AudioDecoderWrapper(audio_tokenizer).eval().to(device)
     _export(
         wrapper, (dummy,),
@@ -133,9 +133,9 @@ def main():
             print("Exporting audio encoder…")
             export_audio_encoder(model.audio_tokenizer, args.output_dir, args.device)
             print("Exporting audio decoder…")
-            export_audio_decoder(model.audio_tokenizer, args.output_dir, args.device)
+            export_audio_decoder(model.audio_tokenizer, args.output_dir, args.device, model.config.num_audio_codebook)
 
-    model.tokenizer.save_pretrained(args.output_dir)
+    model.text_tokenizer.save_pretrained(args.output_dir)
     print(f"\nAll models exported to {args.output_dir}/")
     print("Upload the contents of that directory to serve as your model endpoint.")
 
