@@ -38,8 +38,12 @@
 
 <div class="card" id="setup-card">
   <div class="section-title">Model Setup</div>
-  <label>Model directory URL (must contain omnivoice_lm.onnx, audio_encoder.onnx, audio_decoder.onnx, tokenizer files)</label>
-  <input type="text" id="model-url" value="https://huggingface.co/k2-fsa/OmniVoice-ONNX/resolve/main" style="width:100%;background:#111118;border:1px solid #333;border-radius:8px;color:#e0e0e8;padding:.75rem;font-size:.95rem;outline:none">
+  <label>Model directory URL</label>
+  <input type="text" id="model-url" value="https://huggingface.co/lanmower/OmniVoice-ONNX/resolve/main" style="width:100%;background:#111118;border:1px solid #333;border-radius:8px;color:#e0e0e8;padding:.75rem;font-size:.95rem;outline:none">
+  <div style="margin-top:.75rem">
+    <label>HuggingFace token (optional, removes rate limiting)</label>
+    <input type="password" id="hf-token" style="width:100%;background:#111118;border:1px solid #333;border-radius:8px;color:#e0e0e8;padding:.75rem;font-size:.95rem;outline:none" placeholder="hf_…">
+  </div>
   <button id="load-btn">Load Models</button>
   <div class="log" id="load-log">Not loaded</div>
 </div>
@@ -110,7 +114,8 @@ $('load-btn').addEventListener('click', async () => {
   $('load-btn').disabled = true;
   $('load-log').textContent = 'Loading…';
   try {
-    await engine.load($('model-url').value.trim(), msg => { $('load-log').textContent = msg; });
+    const token = $('hf-token').value.trim() || null;
+    await engine.load($('model-url').value.trim(), msg => { $('load-log').textContent = msg; }, token);
     $('gpu-badge').textContent = `Backend: ${engine.device.toUpperCase()}`;
     $('gpu-badge').className = `badge ${engine.device === 'webgpu' ? 'webgpu' : 'wasm'}`;
     $('gen-btn').disabled = false;

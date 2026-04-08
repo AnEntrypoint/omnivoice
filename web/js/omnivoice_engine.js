@@ -10,33 +10,35 @@ const DEFAULT_REF_FRAMES = 25;
 export class OmniVoiceEngine {
   constructor() { this.lmSession = this.encSession = this.decSession = this.tokenizer = null; this.device = 'wasm'; }
 
-  async load(modelDir, onProgress) {
+  async load(modelDir, onProgress, token) {
     const ort = await import('onnxruntime-web/webgpu');
     ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/';
     this.ort = ort;
     this.device = (typeof navigator !== 'undefined' && navigator.gpu) ? 'webgpu' : 'wasm';
     const opts = { executionProviders: [this.device], graphOptimizationLevel: 'all' };
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const fetchBuf = url => fetch(url, { headers }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}: ${url}`); return r.arrayBuffer(); });
     onProgress?.('LM model…');
-    const manifest = await fetch(`${modelDir}/manifest.json`).then(r => r.json()).catch(() => null);
+    const manifest = await fetch(`${modelDir}/manifest.json`, { headers }).then(r => r.json()).catch(() => null);
     const extFiles = manifest?.lm_external_data ?? [];
+    const lmOpts = { ...opts };
     if (extFiles.length) {
       onProgress?.('Fetching weights…');
-      const lmOpts = { ...opts };
       lmOpts.externalData = await Promise.all(
         extFiles.map(async name => {
-          const buf = await fetch(`${modelDir}/${name}`).then(r => r.arrayBuffer());
+          const buf = await fetchBuf(`${modelDir}/${name}`);
           return { path: name, data: new Uint8Array(buf) };
         })
       );
-      const lmBuf = await fetch(`${modelDir}/omnivoice_lm.onnx`).then(r => r.arrayBuffer());
-      this.lmSession = await ort.InferenceSession.create(new Uint8Array(lmBuf), lmOpts);
-    } else {
-      this.lmSession = await ort.InferenceSession.create(`${modelDir}/omnivoice_lm.onnx`, opts);
     }
+    const lmBuf = await fetchBuf(`${modelDir}/omnivoice_lm.onnx`);
+    this.lmSession = await ort.InferenceSession.create(new Uint8Array(lmBuf), lmOpts);
     onProgress?.('Audio encoder…');
-    this.encSession = await ort.InferenceSession.create(`${modelDir}/audio_encoder.onnx`, opts);
+    const encBuf = await fetchBuf(`${modelDir}/audio_encoder.onnx`);
+    this.encSession = await ort.InferenceSession.create(new Uint8Array(encBuf), opts);
     onProgress?.('Audio decoder…');
-    this.decSession = await ort.InferenceSession.create(`${modelDir}/audio_decoder.onnx`, opts);
+    const decBuf = await fetchBuf(`${modelDir}/audio_decoder.onnx`);
+    this.decSession = await ort.InferenceSession.create(new Uint8Array(decBuf), opts);
     const { AutoTokenizer } = await import('@huggingface/transformers');
     onProgress?.('Tokenizer…');
     this.tokenizer = await AutoTokenizer.from_pretrained(modelDir);
