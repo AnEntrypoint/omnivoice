@@ -12,6 +12,8 @@ The `attention_mask` in `OmniVoice.forward` is **full** (non-causal), not lower-
 
 `onnxruntime-web` is pinned to **exact version `1.21.0`** in `web/package.json`. The `wasmPaths` CDN URL in `omnivoice_engine.js` is hardcoded to the same version. Both must be updated together — a range in `package.json` (e.g. `^1.21.0`) can resolve to a different runtime version than the CDN serves, breaking WASM initialization silently.
 
+`onnxruntime-web`'s `InferenceSession.create(url)` does not support custom request headers. To pass an `Authorization: Bearer` token for authenticated HuggingFace downloads, fetch the model to an `ArrayBuffer` first and call `InferenceSession.create(new Uint8Array(buf))`. The same applies to external data files passed via `lmOpts.externalData`.
+
 ## Browser environment
 
 `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` headers are required for `SharedArrayBuffer` (used by the ONNX WASM multi-threaded backend). Vite dev server sets these automatically; a production static server must set them manually.
