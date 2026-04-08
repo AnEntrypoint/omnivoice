@@ -137,7 +137,7 @@ def main():
     print(f"Loading model from {args.model_path} …")
     model = OmniVoice.from_pretrained(
         args.model_path,
-        torch_dtype=torch.float32,
+        torch_dtype=torch.float16,
         attn_implementation="eager",
         device_map=args.device,
     )

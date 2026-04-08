@@ -31,6 +31,30 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
+      - name: Optimize ONNX models with graph optimization
+        run: |
+          pip install onnx-simplifier -q
+          python - <<'EOF'
+          import onnxsim
+          import onnx
+          import os
+          models = ["omnivoice_lm.onnx", "audio_encoder.onnx", "audio_decoder.onnx"]
+          for model_name in models:
+            path = f"./onnx_out/{model_name}"
+            if os.path.exists(path):
+              print(f"Optimizing {model_name}...")
+              model = onnx.load(path, load_external_data=True)
+              opt_model, _ = onnxsim.simplify(model)
+              onnx.save_model(
+                opt_model, path,
+                save_as_external_data=True,
+                all_tensors_to_one_file=True,
+                location=path + ".data",
+                convert_attribute=False,
+              )
+              print(f"  Optimized: {model_name}")
+          EOF
+
       - name: Verify manifest for external data
         run: |
           python - <<'EOF'
