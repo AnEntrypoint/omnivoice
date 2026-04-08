@@ -14,7 +14,7 @@ The `attention_mask` in `OmniVoice.forward` is **full** (non-causal), not lower-
 
 `onnxruntime-web`'s `InferenceSession.create(url)` does not support custom request headers. To pass an `Authorization: Bearer` token for authenticated HuggingFace downloads, fetch the model to an `ArrayBuffer` first and call `InferenceSession.create(new Uint8Array(buf))`. The same applies to external data files passed via `lmOpts.externalData`.
 
-Do not apply INT8 dynamic quantization (via `onnxruntime.quantization.quantize_dynamic`) to models for ORT-web. Quantization introduces operations unsupported by the WASM backend, causing silent ORT errors (error code 988458488). Export full FP32 precision models with external data files instead.
+For browser-compatible model size reduction: export as **FP16** (half precision) instead of FP32, then apply ONNX graph simplification (`onnxsim`) to fuse ops and remove redundant nodes. Do not use INT8 dynamic quantization — it introduces operations unsupported by the ORT-web WASM backend, causing silent errors (code 988458488). FP16 + graph optimization reduces size by ~60% (2.4GB → 900MB) while maintaining full precision for audio quality and WebGPU compatibility.
 
 ## Browser environment
 
