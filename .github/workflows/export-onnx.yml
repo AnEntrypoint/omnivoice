@@ -31,25 +31,13 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
-      - name: Quantize LM to INT8
+      - name: Verify manifest for external data
         run: |
           python - <<'EOF'
-          from onnxruntime.quantization import quantize_dynamic, QuantType
-          import os
-          quantize_dynamic(
-              "./onnx_out/omnivoice_lm.onnx",
-              "./onnx_out/omnivoice_lm.onnx",
-              weight_type=QuantType.QInt8,
-          )
-          # Remove the .data file — quantized model is self-contained
-          data = "./onnx_out/omnivoice_lm.onnx.data"
-          if os.path.exists(data):
-              os.remove(data)
-          # Update manifest to have no external data
           import json
-          with open("./onnx_out/manifest.json", "w") as f:
-              json.dump({"lm_external_data": []}, f)
-          print("Quantized LM to INT8")
+          with open("./onnx_out/manifest.json") as f:
+              manifest = json.load(f)
+          print("External data files:", manifest.get("lm_external_data", []))
           EOF
 
       - name: Upload to HuggingFace Hub
