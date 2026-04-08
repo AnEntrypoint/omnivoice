@@ -56,6 +56,16 @@ User Text → Tokenizer (transformers.js)
          → WAV output
 ```
 
+## Model Loading & Authentication
+
+The web app can load models from any publicly accessible URL or from HuggingFace Hub. To remove download rate limiting (0.3 MB/s → 2-3 MB/s), provide a HuggingFace token in the UI:
+
+1. Generate a HuggingFace token at [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+2. In the web app, paste the token in "HuggingFace token (optional)" field
+3. Set model URL to a HuggingFace repo: `https://huggingface.co/lanmower/OmniVoice-ONNX/resolve/main`
+
+The app handles all HTTP authentication headers internally — tokens remain in-browser only.
+
 ## Browser Requirements
 
 | Feature | Minimum |
@@ -72,8 +82,9 @@ User Text → Tokenizer (transformers.js)
 | audio_encoder.onnx | ~200 MB | ~100 MB |
 | audio_decoder.onnx | ~200 MB | ~100 MB |
 
-For browser deployment, quantize to fp16 or int8 with:
+For browser deployment, export to **FP16** (default in export script) for ~50% size reduction. The export also applies ONNX graph simplification to further optimize performance.
+
 ```bash
 python -m omnivoice.scripts.export_onnx --model_path k2-fsa/OmniVoice \
-    --output_dir ./web/public/models --quantize fp16
+    --output_dir ./web/public/models
 ```
