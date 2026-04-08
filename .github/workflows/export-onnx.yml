@@ -45,11 +45,14 @@ jobs:
               print(f"Optimizing {model_name}...")
               model = onnx.load(path, load_external_data=True)
               opt_model, _ = onnxsim.simplify(model)
+              data_path = path + ".data"
+              if os.path.exists(data_path):
+                os.remove(data_path)
               onnx.save_model(
                 opt_model, path,
                 save_as_external_data=True,
                 all_tensors_to_one_file=True,
-                location=path + ".data",
+                location=data_path,
                 convert_attribute=False,
               )
               print(f"  Optimized: {model_name}")
