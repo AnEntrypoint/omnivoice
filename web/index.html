@@ -121,7 +121,7 @@ $('load-btn').addEventListener('click', async () => {
     $('gen-btn').disabled = false;
     $('load-log').textContent = `✓ Loaded (${engine.device})`;
   } catch (e) {
-    $('load-log').textContent = `Error: ${e.message}`;
+    $('load-log').textContent = `Error: ${String(e)}`;
     $('load-btn').disabled = false;
   }
 });

@@ -31,8 +31,10 @@ export class OmniVoiceEngine {
         })
       );
     }
+    onProgress?.('Loading LM session…');
     const lmBuf = await fetchBuf(`${modelDir}/omnivoice_lm.onnx`);
-    this.lmSession = await ort.InferenceSession.create(new Uint8Array(lmBuf), lmOpts);
+    onProgress?.('Creating LM session…');
+    this.lmSession = await ort.InferenceSession.create(new Uint8Array(lmBuf), lmOpts).catch(e => { console.error('LM session error:', e); throw e; });
     onProgress?.('Audio encoder…');
     const encBuf = await fetchBuf(`${modelDir}/audio_encoder.onnx`);
     this.encSession = await ort.InferenceSession.create(new Uint8Array(encBuf), opts);
